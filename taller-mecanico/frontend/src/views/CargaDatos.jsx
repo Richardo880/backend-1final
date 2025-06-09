@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 
 const CargaDatos = () => {
   const [mensaje, setMensaje] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const cargarDatos = async () => {
     setMensaje('Cargando datos...');
+    setIsLoading(true);
 
     try {
       // Crear cliente
@@ -78,14 +80,51 @@ const CargaDatos = () => {
     } catch (error) {
       console.error(error);
       setMensaje('❌ Error al cargar datos: ' + error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="consulta-container">
-      <h2>Carga de Datos de Prueba</h2>
-      <button onClick={cargarDatos}>Cargar Datos</button>
-      <p>{mensaje}</p>
+    <div className="card bg-base-100 shadow-xl max-w-2xl mx-auto">
+      <div className="card-body">
+        <h2 className="card-title text-2xl font-bold text-center mb-6">Carga de Datos de Prueba</h2>
+        
+        <div className="space-y-6">
+          <div className="bg-base-200 p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Datos que se cargarán:</h3>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>Cliente: Juan Pérez</li>
+              <li>Vehículo: Toyota Hilux (ABC123)</li>
+              <li>Mecánico: Carlos Méndez</li>
+              <li>Repuesto: Filtro de aceite (RPT123)</li>
+            </ul>
+          </div>
+          
+          <div className="flex justify-center">
+            <button 
+              onClick={cargarDatos} 
+              className={`btn btn-primary btn-lg ${isLoading ? 'loading' : ''}`}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Cargando...' : 'Cargar Datos de Prueba'}
+            </button>
+          </div>
+          
+          {mensaje && (
+            <div className={`alert ${
+              mensaje.includes('✅') ? 'alert-success' : 
+              mensaje.includes('⚠') ? 'alert-warning' : 
+              mensaje.includes('❌') ? 'alert-error' : 
+              'alert-info'
+            } mt-4`}>
+              <div>
+                <span>{mensaje}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
