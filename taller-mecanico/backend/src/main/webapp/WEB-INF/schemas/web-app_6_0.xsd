@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="https://jakarta.ee/xml/ns/jakartaee"
+           xmlns="https://jakarta.ee/xml/ns/jakartaee"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="6.0">
+
+    <!-- Definición mínima de ejemplo -->
+    <xs:element name="web-app">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="display-name" type="xs:string" minOccurs="0"/>
+                <xs:element name="servlet" minOccurs="0" maxOccurs="unbounded">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="servlet-name" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="version" type="xs:string" fixed="6.0" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
