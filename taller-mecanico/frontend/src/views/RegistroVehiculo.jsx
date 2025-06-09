@@ -11,6 +11,7 @@ const RegistroVehiculo = () => {
     clienteId: ''
   });
   const [mensaje, setMensaje] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // Cargar clientes disponibles
   useEffect(() => {
@@ -29,6 +30,7 @@ const RegistroVehiculo = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     setMensaje('Enviando...');
+    setIsLoading(true);
 
     try {
       const response = await fetch('http://localhost:8080/backend/api/vehiculos', {
@@ -52,38 +54,133 @@ const RegistroVehiculo = () => {
       }
     } catch (error) {
       setMensaje('❌ Error de red al registrar vehículo.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="consulta-container">
-      <h2>Registro de Vehículo</h2>
-      <form onSubmit={handleSubmit}>
-        <input name="marca" value={vehiculo.marca} onChange={handleChange} placeholder="Marca" required />
-        <input name="modelo" value={vehiculo.modelo} onChange={handleChange} placeholder="Modelo" required />
-        <input name="chapa" value={vehiculo.chapa} onChange={handleChange} placeholder="Chapa" required />
-        <input name="anho" value={vehiculo.anho} onChange={handleChange} placeholder="Año" type="number" required />
-
-        <select name="tipo" value={vehiculo.tipo} onChange={handleChange}>
-          <option value="MOTO">MOTO</option>
-          <option value="COCHE">COCHE</option>
-          <option value="CAMIONETA">CAMIONETA</option>
-          <option value="CAMION">CAMION</option>
-        </select>
-
-        <select name="clienteId" value={vehiculo.clienteId} onChange={handleChange} required>
-          <option value="">-- Seleccionar Cliente --</option>
-          {clientes.map(cli => (
-            <option key={cli.id} value={cli.id}>
-              {cli.nombre} - {cli.ruc}
-            </option>
-          ))}
-        </select>
-
-        <button type="submit">Registrar Vehículo</button>
-      </form>
-
-      <p>{mensaje}</p>
+    <div className="card bg-base-100 shadow-xl max-w-2xl mx-auto">
+      <div className="card-body">
+        <h2 className="card-title text-2xl font-bold text-center mb-6">Registro de Vehículo</h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Marca</span>
+            </label>
+            <input 
+              type="text"
+              name="marca"
+              value={vehiculo.marca}
+              onChange={handleChange}
+              placeholder="Ej: Toyota"
+              className="input input-bordered w-full"
+              required
+            />
+          </div>
+          
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Modelo</span>
+            </label>
+            <input 
+              type="text"
+              name="modelo"
+              value={vehiculo.modelo}
+              onChange={handleChange}
+              placeholder="Ej: Corolla"
+              className="input input-bordered w-full"
+              required
+            />
+          </div>
+          
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Chapa</span>
+            </label>
+            <input 
+              type="text"
+              name="chapa"
+              value={vehiculo.chapa}
+              onChange={handleChange}
+              placeholder="Ej: ABC-123"
+              className="input input-bordered w-full"
+              required
+            />
+          </div>
+          
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Año</span>
+            </label>
+            <input 
+              type="number"
+              name="anho"
+              value={vehiculo.anho}
+              onChange={handleChange}
+              placeholder="Ej: 2020"
+              className="input input-bordered w-full"
+              required
+            />
+          </div>
+          
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Tipo de vehículo</span>
+            </label>
+            <select 
+              name="tipo"
+              value={vehiculo.tipo}
+              onChange={handleChange}
+              className="select select-bordered w-full"
+            >
+              <option value="MOTO">Moto</option>
+              <option value="COCHE">Coche</option>
+              <option value="CAMIONETA">Camioneta</option>
+              <option value="CAMION">Camión</option>
+            </select>
+          </div>
+          
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Cliente</span>
+            </label>
+            <select 
+              name="clienteId"
+              value={vehiculo.clienteId}
+              onChange={handleChange}
+              className="select select-bordered w-full"
+              required
+            >
+              <option value="">-- Seleccionar Cliente --</option>
+              {clientes.map(cli => (
+                <option key={cli.id} value={cli.id}>
+                  {cli.nombre} - {cli.ruc}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div className="form-control mt-6">
+            <button 
+              type="submit" 
+              className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Registrando...' : 'Registrar Vehículo'}
+            </button>
+          </div>
+        </form>
+        
+        {mensaje && (
+          <div className={`alert ${mensaje.includes('✅') ? 'alert-success' : 'alert-error'} mt-4`}>
+            <div>
+              <span>{mensaje}</span>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
