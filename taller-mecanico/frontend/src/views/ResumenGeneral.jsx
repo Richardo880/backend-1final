@@ -29,44 +29,132 @@ const ResumenGeneral = () => {
   }, []);
 
   return (
-    <div className="consulta-container">
-      <h2>Resumen General</h2>
+    <div className="max-w-6xl mx-auto">
+      <h2 className="text-3xl font-bold text-center mb-8">Resumen General</h2>
 
-      <section>
-        <h3>📋 Clientes</h3>
-        <ul>
-          {clientes.map(c => (
-            <li key={c.id}>{c.nombre} - {c.telefono} - {c.ruc}</li>
-          ))}
-        </ul>
-      </section>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h3 className="card-title text-xl">
+              <span className="text-2xl mr-2">📋</span> Clientes
+              <div className="badge badge-primary">{clientes.length}</div>
+            </h3>
+            
+            <div className="overflow-x-auto max-h-80 overflow-y-auto">
+              <table className="table table-zebra w-full">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>RUC</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clientes.map(c => (
+                    <tr key={c.id} className="hover">
+                      <td>{c.nombre}</td>
+                      <td>{c.telefono}</td>
+                      <td>{c.ruc}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-      <section>
-        <h3>🚗 Vehículos</h3>
-        <ul>
-          {vehiculos.map(v => (
-            <li key={v.id}>{v.marca} {v.modelo} ({v.chapa}) - Cliente ID: {v.cliente?.id}</li>
-          ))}
-        </ul>
-      </section>
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h3 className="card-title text-xl">
+              <span className="text-2xl mr-2">🚗</span> Vehículos
+              <div className="badge badge-primary">{vehiculos.length}</div>
+            </h3>
+            
+            <div className="overflow-x-auto max-h-80 overflow-y-auto">
+              <table className="table table-zebra w-full">
+                <thead>
+                  <tr>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Chapa</th>
+                    <th>Cliente</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vehiculos.map(v => (
+                    <tr key={v.id} className="hover">
+                      <td>{v.marca}</td>
+                      <td>{v.modelo}</td>
+                      <td>{v.chapa}</td>
+                      <td>
+                        <div className="badge badge-ghost">ID: {v.cliente?.id}</div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-      <section>
-        <h3>🧰 Mecánicos</h3>
-        <ul>
-          {mecanicos.map(m => (
-            <li key={m.id}>{m.nombre} - {m.especialidad} - {m.fechaIngreso}</li>
-          ))}
-        </ul>
-      </section>
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h3 className="card-title text-xl">
+              <span className="text-2xl mr-2">🧰</span> Mecánicos
+              <div className="badge badge-primary">{mecanicos.length}</div>
+            </h3>
+            
+            <div className="overflow-x-auto max-h-80 overflow-y-auto">
+              <table className="table table-zebra w-full">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Especialidad</th>
+                    <th>Fecha Ingreso</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mecanicos.map(m => (
+                    <tr key={m.id} className="hover">
+                      <td>{m.nombre}</td>
+                      <td>{m.especialidad}</td>
+                      <td>{m.fechaIngreso}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
 
-      <section>
-        <h3>🔧 Repuestos</h3>
-        <ul>
-          {repuestos.map(r => (
-            <li key={r.id}>{r.codigo} - {r.nombre}</li>
-          ))}
-        </ul>
-      </section>
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h3 className="card-title text-xl">
+              <span className="text-2xl mr-2">🔧</span> Repuestos
+              <div className="badge badge-primary">{repuestos.length}</div>
+            </h3>
+            
+            <div className="overflow-x-auto max-h-80 overflow-y-auto">
+              <table className="table table-zebra w-full">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {repuestos.map(r => (
+                    <tr key={r.id} className="hover">
+                      <td>{r.codigo}</td>
+                      <td>{r.nombre}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
