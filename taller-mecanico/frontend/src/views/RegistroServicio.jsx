@@ -11,6 +11,7 @@ const RegistroServicio = () => {
   const [mecanicos, setMecanicos] = useState([]);
   const [repuestos, setRepuestos] = useState([]);
   const [mensaje, setMensaje] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const [servicio, setServicio] = useState({
     clienteId: '',
@@ -70,6 +71,7 @@ const RegistroServicio = () => {
 
   const enviarFormulario = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
 
     const payload = {
       fecha: servicio.fecha,
@@ -89,73 +91,181 @@ const RegistroServicio = () => {
 
     try {
       await registrarServicio(payload);
-      alert("✅ Servicio registrado con éxito.");
-      setMensaje('');
+      setMensaje('✅ Servicio registrado con éxito.');
     } catch (error) {
         console.error("❌ Error al registrar servicio:", error);
-        setMensaje('Error al registrar el servicio: ' + error.message);
-      }
+        setMensaje('❌ Error al registrar el servicio: ' + error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={enviarFormulario}>
-      <h2>Registrar Servicio</h2>
+    <div className="card bg-base-100 shadow-xl max-w-4xl mx-auto">
+      <div className="card-body">
+        <h2 className="card-title text-2xl font-bold text-center mb-6">Registrar Servicio</h2>
+        
+        <form onSubmit={enviarFormulario} className="space-y-4">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Cliente:</span>
+            </label>
+            <select 
+              name="clienteId" 
+              value={servicio.clienteId} 
+              onChange={handleChange}
+              className="select select-bordered w-full"
+            >
+              <option value="">Seleccione...</option>
+              {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+            </select>
+          </div>
 
-      <label>Cliente:</label>
-      <select name="clienteId" value={servicio.clienteId} onChange={handleChange}>
-        <option value="">Seleccione...</option>
-        {clientes.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-      </select>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Vehículo:</span>
+            </label>
+            <select 
+              name="vehiculoId" 
+              value={servicio.vehiculoId} 
+              onChange={handleChange}
+              className="select select-bordered w-full"
+            >
+              <option value="">Seleccione...</option>
+              {vehiculos.map(v => <option key={v.id} value={v.id}>{v.modelo} - {v.chapa}</option>)}
+            </select>
+          </div>
 
-      <label>Vehículo:</label>
-      <select name="vehiculoId" value={servicio.vehiculoId} onChange={handleChange}>
-        <option value="">Seleccione...</option>
-        {vehiculos.map(v => <option key={v.id} value={v.id}>{v.modelo} - {v.chapa}</option>)}
-      </select>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Fecha:</span>
+            </label>
+            <input 
+              type="date" 
+              name="fecha" 
+              value={servicio.fecha} 
+              onChange={handleChange}
+              className="input input-bordered w-full"
+            />
+          </div>
 
-      <label>Fecha:</label>
-      <input type="date" name="fecha" value={servicio.fecha} onChange={handleChange} />
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Kilometraje:</span>
+            </label>
+            <input 
+              type="number" 
+              name="kilometraje" 
+              value={servicio.kilometraje} 
+              onChange={handleChange}
+              className="input input-bordered w-full"
+              placeholder="Ej: 50000"
+            />
+          </div>
 
-      <label>Kilometraje:</label>
-      <input type="number" name="kilometraje" value={servicio.kilometraje} onChange={handleChange} />
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Descripción general:</span>
+            </label>
+            <textarea 
+              name="descripcionGeneral" 
+              value={servicio.descripcionGeneral} 
+              onChange={handleChange}
+              className="textarea textarea-bordered w-full"
+              placeholder="Describa el problema general del vehículo"
+            />
+          </div>
 
-      <label>Descripción general:</label>
-      <textarea name="descripcionGeneral" value={servicio.descripcionGeneral} onChange={handleChange} />
+          <div className="divider">Detalles del servicio</div>
+          
+          {servicio.detalles.map((detalle, index) => (
+            <div key={index} className="card bg-base-200 shadow-sm p-4 mb-4">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Descripción trabajo:</span>
+                </label>
+                <input
+                  type="text"
+                  value={detalle.descripcionTrabajo}
+                  onChange={e => handleDetalleChange(index, 'descripcionTrabajo', e.target.value)}
+                  className="input input-bordered w-full"
+                  placeholder="Ej: Cambio de aceite"
+                />
+              </div>
 
-      <h3>Detalles</h3>
-      {servicio.detalles.map((detalle, index) => (
-        <div key={index} style={{ border: '1px solid #ccc', padding: '10px', marginBottom: '10px' }}>
-          <label>Descripción trabajo:</label>
-          <input
-            type="text"
-            value={detalle.descripcionTrabajo}
-            onChange={e => handleDetalleChange(index, 'descripcionTrabajo', e.target.value)}
-          />
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Costo:</span>
+                </label>
+                <input
+                  type="number"
+                  value={detalle.costo}
+                  onChange={e => handleDetalleChange(index, 'costo', e.target.value)}
+                  className="input input-bordered w-full"
+                  placeholder="Ej: 25000"
+                />
+              </div>
 
-          <label>Costo:</label>
-          <input
-            type="number"
-            value={detalle.costo}
-            onChange={e => handleDetalleChange(index, 'costo', e.target.value)}
-          />
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Mecánicos:</span>
+                </label>
+                <select 
+                  multiple 
+                  onChange={e => handleSelectMultiple(index, 'mecanicos', e.target.options)}
+                  className="select select-bordered w-full h-32"
+                >
+                  {mecanicos.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
+                </select>
+                <span className="text-xs text-opacity-70 mt-1">Mantener Ctrl para selección múltiple</span>
+              </div>
 
-          <label>Mecánicos:</label>
-          <select multiple onChange={e => handleSelectMultiple(index, 'mecanicos', e.target.options)}>
-            {mecanicos.map(m => <option key={m.id} value={m.id}>{m.nombre}</option>)}
-          </select>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Repuestos:</span>
+                </label>
+                <select 
+                  multiple 
+                  onChange={e => handleSelectMultiple(index, 'repuestos', e.target.options)}
+                  className="select select-bordered w-full h-32"
+                >
+                  {repuestos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
+                </select>
+                <span className="text-xs text-opacity-70 mt-1">Mantener Ctrl para selección múltiple</span>
+              </div>
+            </div>
+          ))}
 
-          <label>Repuestos:</label>
-          <select multiple onChange={e => handleSelectMultiple(index, 'repuestos', e.target.options)}>
-            {repuestos.map(r => <option key={r.id} value={r.id}>{r.nombre}</option>)}
-          </select>
-        </div>
-      ))}
-
-      <button type="button" onClick={agregarDetalle}>+ Agregar Detalle</button>
-      <br /><br />
-      <button type="submit">Registrar Servicio</button>
-      {mensaje && <p>{mensaje}</p>}
-    </form>
+          <div className="flex justify-end">
+            <button 
+              type="button" 
+              onClick={agregarDetalle} 
+              className="btn btn-outline btn-sm"
+            >
+              + Agregar Detalle
+            </button>
+          </div>
+          
+          <div className="form-control mt-6">
+            <button 
+              type="submit" 
+              className={`btn btn-primary ${isLoading ? 'loading' : ''}`}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Registrando...' : 'Registrar Servicio'}
+            </button>
+          </div>
+        </form>
+        
+        {mensaje && (
+          <div className={`alert ${mensaje.includes('✅') ? 'alert-success' : 'alert-error'} mt-4`}>
+            <div>
+              <span>{mensaje}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 
