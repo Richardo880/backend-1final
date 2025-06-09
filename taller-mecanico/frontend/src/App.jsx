@@ -8,6 +8,8 @@ import RegistroCliente from './views/RegistroCliente';
 import RegistroMecanico from './views/RegistroMecanico';
 import RegistroRepuesto from './views/RegistroRepuesto';
 import ResumenGeneral from './views/ResumenGeneral';
+import Footer from './components/Footer';
+import Navbar from './components/Navbar';
 
 
 
@@ -15,17 +17,8 @@ import ResumenGeneral from './views/ResumenGeneral';
 const App = () => {
   return (
     <Router>
-      <div style={{ padding: '20px' }}>
-        <nav style={{ marginBottom: '20px' }}>
-          <Link to="/" style={{ marginRight: '10px' }}>Registrar Servicio</Link>
-          <Link to="/consulta">Consultar Servicios</Link>
-          <Link to="/carga">Carga de Prueba</Link>
-          <Link to="/registro-cliente">Registrar Cliente</Link>
-          <Link to="/registro-vehiculo">Registrar Vehiculo</Link>
-          <Link to="/registro-mecanico">Registrar Mecánico</Link>
-          <Link to="/registro-repuesto">Registrar Repuesto</Link>
-          <Link to="/resumen">Ver Resumen General</Link>
-        </nav>
+      <div >
+        <Navbar />
 
         <Routes>
           <Route path="/" element={<RegistroServicio />} />
@@ -38,6 +31,7 @@ const App = () => {
           <Route path="/resumen" element={<ResumenGeneral />} />
 
         </Routes>
+        <Footer />
       </div>
     </Router>
   );

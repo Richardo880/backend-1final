@@ -1,8 +1,8 @@
-body {
+/* body {
   font-family: Arial, sans-serif;
   background-color: #f9f9f9;
   margin: 0;
-  padding: 20px;
+  min-height: 100vh;
 }
 
 h2, h3 {
@@ -23,6 +23,7 @@ label {
   display: block;
   margin-top: 10px;
   font-weight: bold;
+  color: #555;
 }
 
 input[type="text"],
@@ -35,32 +36,19 @@ select {
   margin-top: 4px;
   border-radius: 4px;
   border: 1px solid #ccc;
+  color: #333;
+  
 }
 
 button {
-  margin-top: 15px;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 4px;
   background-color: #1976d2;
   color: white;
-  cursor: pointer;
 }
 
 button:hover {
   background-color: #115293;
 }
 
-nav a {
-  margin-right: 15px;
-  text-decoration: none;
-  color: #1976d2;
-  font-weight: bold;
-}
-
-nav a:hover {
-  text-decoration: underline;
-}
 
 .detalle-box {
   border: 1px solid #ddd;
@@ -68,4 +56,4 @@ nav a:hover {
   margin-top: 10px;
   border-radius: 4px;
   background-color: #f3f3f3;
-}
+} */
