@@ -208,37 +208,59 @@ const ConsultaHistorico = () => {
 
                                 <div className="mt-4">
                                   <h4 className="font-bold mb-2">Trabajos Realizados</h4>
-                                  <div className="space-y-2">
-                                    {servicioExpandido.detallesDTO && servicioExpandido.detallesDTO.length > 0 ? (
-                                      servicioExpandido.detallesDTO.map((detalle, index) => (
-                                        <div key={index} className="bg-base-100 p-3 rounded">
-                                          <div className="flex justify-between">
-                                            <span className="font-semibold">{detalle.descripcionTrabajo}</span>
-                                            <span className="font-bold">${detalle.costo.toLocaleString()}</span>
-                                          </div>
-                                          {detalle.mecanicos && detalle.mecanicos.length > 0 && (
-                                            <div className="mt-1">
-                                              <span className="text-sm font-semibold">Mecánicos: </span>
-                                              {detalle.mecanicos.map((m, i) => (
-                                                <span key={i} className="badge badge-sm mr-1">{m.nombre}</span>
-                                              ))}
-                                            </div>
-                                          )}
-                                          {detalle.repuestos && detalle.repuestos.length > 0 && (
-                                            <div className="mt-1">
-                                              <span className="text-sm font-semibold">Repuestos: </span>
-                                              {detalle.repuestos.map((r, i) => (
-                                                <span key={i} className="badge badge-sm mr-1">{r.nombre}</span>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </div>
-                                      ))
-                                    ) : (
-                                      <div className="bg-base-100 p-3 rounded text-center text-gray-500">
-                                        No hay trabajos registrados para este servicio
-                                      </div>
-                                    )}
+                                  <div className="overflow-x-auto">
+                                    <table className="table w-full">
+                                      <thead>
+                                        <tr>
+                                          <th className="w-1/3">Descripción</th>
+                                          <th className="w-1/4">Costo</th>
+                                          <th className="w-1/4">Mecánicos</th>
+                                          <th className="w-1/4">Repuestos</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {servicioExpandido.detalles && servicioExpandido.detalles.length > 0 ? (
+                                          servicioExpandido.detalles.map((detalle, index) => (
+                                            <tr key={index} className="hover">
+                                              <td className="font-medium">{detalle.descripcionTrabajo}</td>
+                                              <td className="font-bold">${detalle.costo.toLocaleString()}</td>
+                                              <td>
+                                                {detalle.mecanicos && detalle.mecanicos.length > 0 ? (
+                                                  <div className="flex flex-wrap gap-1">
+                                                    {detalle.mecanicos.map((m, i) => (
+                                                      <div key={i} className="badge badge-primary badge-sm">
+                                                        {m.nombre}
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                ) : (
+                                                  <span className="text-gray-500 text-sm">Sin mecánicos asignados</span>
+                                                )}
+                                              </td>
+                                              <td>
+                                                {detalle.repuestos && detalle.repuestos.length > 0 ? (
+                                                  <div className="flex flex-wrap gap-1">
+                                                    {detalle.repuestos.map((r, i) => (
+                                                      <div key={i} className="badge badge-secondary badge-sm">
+                                                        {r.nombre}
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                ) : (
+                                                  <span className="text-gray-500 text-sm">Sin repuestos utilizados</span>
+                                                )}
+                                              </td>
+                                            </tr>
+                                          ))
+                                        ) : (
+                                          <tr>
+                                            <td colSpan="4" className="text-center text-gray-500 py-4">
+                                              No hay trabajos registrados para este servicio
+                                            </td>
+                                          </tr>
+                                        )}
+                                      </tbody>
+                                    </table>
                                   </div>
                                 </div>
                               </div>
