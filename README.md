@@ -1,7 +1,37 @@
-# Sistema de Gestión de Taller Mecánico
+# 🛠️ Sistema de Gestión de Taller Mecánico - Backend
 
-Sistema de gestión para talleres mecánicos que permite administrar servicios, vehículos, clientes, mecánicos y repuestos.
+📌 **Proyecto Académico - Taller Mecánico**
 
+
+📌 **Electiva: Programación Web - Backend**  
+📌 **Trabajo Práctico: Primer Final**  
+📌 **Prof.: Ing. Gustavo Sosa Cataldo**
+
+---
+
+## **👥 Integrantes del Proyecto**
+
+Este proyecto fue desarrollado por el siguiente equipo de trabajo:
+
+- **Kevin Galeano**
+- **María José Duarte**
+- **Tobías Otazu**
+- **Ricardo Toledo**
+- **Enrique Saldivar**
+📌 **Tecnologías utilizadas:** Jakarta EE, WildFly, PostgreSQL, React
+
+
+## 📝 Descripción del Proyecto
+
+Este sistema permite registrar y gestionar las operaciones de un **taller mecánico**, incluyendo:
+
+✅ Gestión de **clientes** y **vehículos**  
+✅ Registro de **mecánicos** y **repuestos**  
+✅ Registro completo de **servicios realizados**, con detalles, costos, repuestos y mano de obra  
+✅ Consultas filtradas por cliente  
+✅ Arquitectura backend RESTful + frontend React
+
+---
 ## Stack Tecnológico
 
 ### Backend
@@ -31,77 +61,95 @@ Sistema de gestión para talleres mecánicos que permite administrar servicios, 
 1. Node.js 18+
 2. npm 9+
 
-## Configuración del Entorno
-
-### Base de Datos
-1. Instalar PostgreSQL 15
-2. Crear una base de datos:
-```sql
-CREATE DATABASE taller_mecanico;
-```
-3. Configurar el usuario y contraseña en el archivo `persistence.xml`
-
-### Backend
-1. Clonar el repositorio:
+Verifica Maven:
 ```bash
-git clone <url-del-repositorio>
-cd taller-mecanico/backend
+mvn -version
 ```
 
-2. Configurar WildFly:
-   - Descargar WildFly 27.0.1 desde [wildfly.org](https://www.wildfly.org/downloads/)
-   - Descomprimir en `/opt/wildfly`
-   - Configurar variables de entorno:
+---
+
+## 🚀 Despliegue del Backend en WildFly
+
+### 1️⃣ Configurar PostgreSQL
+
+- Crear una base de datos: `tallerdb`
+- Editar el archivo `persistence.xml` con tus credenciales de PostgreSQL.
+
+### 2️⃣ Descargar el Driver JDBC
+
+- Descargar desde: https://jdbc.postgresql.org/download/
+- Copiar el `.jar` (por ejemplo, `postgresql-42.7.5.jar`) a:
+
 ```bash
-export JBOSS_HOME=/opt/wildfly
-export PATH=$PATH:$JBOSS_HOME/bin
+$WILDFLY_HOME/modules/system/layers/base/org/postgresql/main/
 ```
 
-3. Configurar el datasource en WildFly:
-   - Ejecutar el script de configuración:
-```bash
-$JBOSS_HOME/bin/jboss-cli.sh --connect
-/subsystem=datasources/data-source=TallerDS:add(
-    jndi-name=java:/TallerDS,
-    driver-name=postgresql,
-    connection-url=jdbc:postgresql://localhost:5432/taller_mecanico,
-    user-name=tu_usuario,
-    password=tu_password
-)
+### 3️⃣ Crear `module.xml`
+
+```xml
+<module xmlns="urn:jboss:module:1.1" name="org.postgresql">
+    <resources>
+        <resource-root path="postgresql-42.7.5.jar"/>
+    </resources>
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+    </dependencies>
+</module>
 ```
 
-4. Compilar y desplegar:
+### 4️⃣ Configurar `standalone.xml`
+
+Dentro de `<datasources>`:
+```xml
+<datasource jndi-name="java:jboss/datasources/PostgresDS" pool-name="PostgresDS" enabled="true" use-java-context="true">
+    <connection-url>jdbc:postgresql://localhost:5432/tallerdb</connection-url>
+    <driver>postgres</driver>
+    <security>
+        <user-name>postgres</user-name>
+        <password>postgres</password>
+    </security>
+</datasource>
+```
+
+Dentro de `<drivers>`:
+```xml
+<driver name="postgres" module="org.postgresql">
+    <driver-class>org.postgresql.Driver</driver-class>
+</driver>
+```
+
+Dentro de `<subsystem xmlns="urn:jboss:domain:ee:4.0">`:
+```xml
+<default-bindings datasource="java:jboss/datasources/PostgresDS" />
+```
+
+---
+
+## 🧪 Despliegue del Proyecto
+
+1. Compilar y empaquetar:
 ```bash
+cd backend
 mvn clean package
-cp target/backend.war $JBOSS_HOME/standalone/deployments/
 ```
 
-5. Iniciar WildFly:
+2. Copiar el `.war` generado (`backend.war`) a:
 ```bash
-$JBOSS_HOME/bin/standalone.sh
+$WILDFLY_HOME/standalone/deployments/
 ```
 
-### Frontend
-1. Navegar al directorio del frontend:
+3. Iniciar WildFly:
 ```bash
-cd taller-mecanico/frontend
+$WILDFLY_HOME/bin/standalone.sh
 ```
 
-2. Instalar dependencias:
-```bash
-npm install
+4. Accede a los endpoints desde:
+```
+http://localhost:8080/backend/api/
 ```
 
-3. Configurar variables de entorno:
-   - Crear archivo `.env`:
-```
-REACT_APP_API_URL=http://localhost:8080/backend/api
-```
-
-4. Iniciar el servidor de desarrollo:
-```bash
-npm start
-```
+---
 
 ## Estructura del Proyecto
 
@@ -142,6 +190,21 @@ taller-mecanico/
 - Búsqueda y filtrado de servicios
 - Reportes y estadísticas
 
+---
+
+## 📡 Endpoints REST
+
+| Entidad      | Método  | Ruta                                  |
+|--------------|---------|----------------------------------------|
+| Clientes     | GET     | `/api/clientes`                        |
+| Vehículos    | GET     | `/api/vehiculos?clienteId=1`           |
+| Mecánicos    | POST    | `/api/mecanicos`                       |
+| Repuestos    | GET     | `/api/repuestos`                       |
+| Servicios    | POST    | `/api/servicios`                       |
+| Consultas    | GET     | `/api/servicios/filtro?clienteId=1`    |
+
+---
+
 ## API Endpoints
 
 ### Servicios
@@ -170,42 +233,7 @@ taller-mecanico/
 - `POST /api/repuestos` - Crear nuevo repuesto
 - `GET /api/repuestos/{id}` - Obtener repuesto por ID
 
-## Solución de Problemas Comunes
-
-### Backend
-1. Error de conexión a la base de datos:
-   - Verificar que PostgreSQL esté corriendo
-   - Confirmar credenciales en persistence.xml
-   - Verificar configuración del datasource en WildFly
-
-2. Error de despliegue:
-   - Verificar logs en `$JBOSS_HOME/standalone/log/server.log`
-   - Confirmar que el WAR se generó correctamente
-   - Verificar permisos en el directorio de despliegue
-
-### Frontend
-1. Error de conexión al backend:
-   - Verificar que WildFly esté corriendo
-   - Confirmar URL en .env
-   - Verificar CORS en el backend
-
-2. Errores de compilación:
-   - Limpiar caché: `npm clean-cache`
-   - Reinstalar dependencias: `npm install`
-   - Verificar versiones de Node.js y npm
-
-## Contribución
-
-1. Fork el repositorio
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
 
 ## Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
-
-## Contacto
-
-Para soporte o consultas, por favor contactar a [tu-email@dominio.com] 
