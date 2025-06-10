@@ -25,7 +25,6 @@ public class Servicio {
     @JoinColumn(name = "vehiculo_id")
     private Vehiculo vehiculo;
 
-    @JsonbTransient
     @OneToMany(mappedBy = "servicio", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<DetalleServicio> detalles = new ArrayList<>();
 

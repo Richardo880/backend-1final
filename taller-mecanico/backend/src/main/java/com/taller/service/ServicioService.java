@@ -29,22 +29,21 @@ public class ServicioService {
     @Transactional
     public Servicio registrarServicio(Servicio servicio) {
         try {
-            System.out.println("Iniciando registro de servicio...");
-            System.out.println("Datos recibidos - ID: " + servicio.getId() + 
-                             ", Fecha: " + servicio.getFecha() + 
-                             ", Descripción: " + servicio.getDescripcionGeneral() + 
-                             ", Kilometraje: " + servicio.getKilometraje() + 
-                             ", Costo Total: " + servicio.getCostoTotal() + 
-                             ", Cantidad de detalles: " + (servicio.getDetalles() != null ? servicio.getDetalles().size() : 0));
-
+            logger.log(Level.INFO, "=== INICIO DE REGISTRO DE SERVICIO ===");
+            logger.log(Level.INFO, "Payload recibido: {0}", servicio);
+            logger.log(Level.INFO, "Detalles en el payload: {0}", servicio.getDetalles());
+            
             // Validar que el vehículo existe
+            logger.log(Level.INFO, "Buscando vehículo con ID: {0}", servicio.getVehiculo().getId());
             Vehiculo vehiculo = em.find(Vehiculo.class, servicio.getVehiculo().getId());
             if (vehiculo == null) {
+                logger.log(Level.SEVERE, "Vehículo no encontrado con ID: {0}", servicio.getVehiculo().getId());
                 throw new IllegalArgumentException("El vehículo no existe");
             }
-            System.out.println("Vehículo encontrado: " + vehiculo.getId());
+            logger.log(Level.INFO, "Vehículo encontrado: {0}", vehiculo.getId());
 
             // Crear una nueva instancia de Servicio
+            logger.log(Level.INFO, "Creando nueva instancia de Servicio");
             Servicio nuevoServicio = new Servicio();
             nuevoServicio.setFecha(servicio.getFecha());
             nuevoServicio.setDescripcionGeneral(servicio.getDescripcionGeneral());
@@ -53,65 +52,80 @@ public class ServicioService {
             nuevoServicio.setVehiculo(vehiculo);
 
             // Persistir el servicio primero
-            System.out.println("Persistiendo servicio...");
+            logger.log(Level.INFO, "Persistiendo servicio base...");
             em.persist(nuevoServicio);
             em.flush();
-            System.out.println("Servicio persistido con ID: " + nuevoServicio.getId());
+            logger.log(Level.INFO, "Servicio persistido con ID: {0}", nuevoServicio.getId());
 
             // Procesar los detalles del servicio
-            if (servicio.getDetalles() != null && !servicio.getDetalles().isEmpty()) {
-                System.out.println("Procesando " + servicio.getDetalles().size() + " detalles...");
-                
+            if (servicio.getDetalles() != null) {
+                logger.log(Level.INFO, "Detalles recibidos en el servicio: {0}", servicio.getDetalles().size());
                 for (DetalleServicio detalleDTO : servicio.getDetalles()) {
-                    System.out.println("Procesando detalle - Descripción: " + detalleDTO.getDescripcionTrabajo() + 
-                                     ", Costo: " + detalleDTO.getCosto());
+                    logger.log(Level.INFO, "Procesando detalle - Descripción: {0}, Costo: {1}", 
+                        new Object[]{detalleDTO.getDescripcionTrabajo(), detalleDTO.getCosto()});
                     
-                    DetalleServicio nuevoDetalle = new DetalleServicio();
-                    nuevoDetalle.setDescripcionTrabajo(detalleDTO.getDescripcionTrabajo());
-                    nuevoDetalle.setCosto(detalleDTO.getCosto());
-                    
-                    // Procesar mecánicos
-                    if (detalleDTO.getMecanicos() != null && !detalleDTO.getMecanicos().isEmpty()) {
-                        System.out.println("Procesando " + detalleDTO.getMecanicos().size() + " mecánicos...");
-                        for (Mecanico mecanicoDTO : detalleDTO.getMecanicos()) {
-                            Mecanico mecanico = em.find(Mecanico.class, mecanicoDTO.getId());
-                            if (mecanico != null) {
-                                System.out.println("Mecánico encontrado: " + mecanico.getId());
-                                nuevoDetalle.agregarMecanico(mecanico);
-                            } else {
-                                System.out.println("¡ADVERTENCIA! Mecánico no encontrado: " + mecanicoDTO.getId());
+                    try {
+                        DetalleServicio nuevoDetalle = new DetalleServicio();
+                        nuevoDetalle.setDescripcionTrabajo(detalleDTO.getDescripcionTrabajo());
+                        nuevoDetalle.setCosto(detalleDTO.getCosto());
+                        nuevoDetalle.setServicio(nuevoServicio); // Establecer la relación bidireccional
+                        
+                        // Procesar mecánicos
+                        if (detalleDTO.getMecanicos() != null) {
+                            logger.log(Level.INFO, "Procesando {0} mecánicos", detalleDTO.getMecanicos().size());
+                            for (Mecanico mecanicoDTO : detalleDTO.getMecanicos()) {
+                                logger.log(Level.INFO, "Buscando mecánico con ID: {0}", mecanicoDTO.getId());
+                                Mecanico mecanico = em.find(Mecanico.class, mecanicoDTO.getId());
+                                if (mecanico != null) {
+                                    logger.log(Level.INFO, "Mecánico encontrado: {0}", mecanico.getId());
+                                    nuevoDetalle.agregarMecanico(mecanico);
+                                } else {
+                                    logger.log(Level.WARNING, "¡ADVERTENCIA! Mecánico no encontrado: {0}", mecanicoDTO.getId());
+                                }
                             }
                         }
-                    }
 
-                    // Procesar repuestos
-                    if (detalleDTO.getRepuestos() != null && !detalleDTO.getRepuestos().isEmpty()) {
-                        System.out.println("Procesando " + detalleDTO.getRepuestos().size() + " repuestos...");
-                        for (Repuesto repuestoDTO : detalleDTO.getRepuestos()) {
-                            Repuesto repuesto = em.find(Repuesto.class, repuestoDTO.getId());
-                            if (repuesto != null) {
-                                System.out.println("Repuesto encontrado: " + repuesto.getId());
-                                nuevoDetalle.agregarRepuesto(repuesto);
-                            } else {
-                                System.out.println("¡ADVERTENCIA! Repuesto no encontrado: " + repuestoDTO.getId());
+                        // Procesar repuestos
+                        if (detalleDTO.getRepuestos() != null) {
+                            logger.log(Level.INFO, "Procesando {0} repuestos", detalleDTO.getRepuestos().size());
+                            for (Repuesto repuestoDTO : detalleDTO.getRepuestos()) {
+                                logger.log(Level.INFO, "Buscando repuesto con ID: {0}", repuestoDTO.getId());
+                                Repuesto repuesto = em.find(Repuesto.class, repuestoDTO.getId());
+                                if (repuesto != null) {
+                                    logger.log(Level.INFO, "Repuesto encontrado: {0}", repuesto.getId());
+                                    nuevoDetalle.agregarRepuesto(repuesto);
+                                } else {
+                                    logger.log(Level.WARNING, "¡ADVERTENCIA! Repuesto no encontrado: {0}", repuestoDTO.getId());
+                                }
                             }
                         }
-                    }
 
-                    // Agregar el detalle al servicio usando el método helper
-                    nuevoServicio.agregarDetalle(nuevoDetalle);
-                    System.out.println("Detalle agregado al servicio");
+                        // Persistir el detalle
+                        logger.log(Level.INFO, "Persistiendo detalle...");
+                        em.persist(nuevoDetalle);
+                        nuevoServicio.agregarDetalle(nuevoDetalle);
+                        logger.log(Level.INFO, "Detalle persistido y agregado al servicio");
+                        
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "Error al procesar detalle: {0}", e.getMessage());
+                        throw e;
+                    }
                 }
+            } else {
+                logger.log(Level.WARNING, "No se encontraron detalles para procesar");
             }
 
-            // Forzar el flush final para asegurar que todo se persista
+            // Forzar el flush final
+            logger.log(Level.INFO, "Realizando flush final...");
             em.flush();
-            System.out.println("Servicio y detalles persistidos completamente");
+            logger.log(Level.INFO, "=== REGISTRO DE SERVICIO COMPLETADO EXITOSAMENTE ===");
+            logger.log(Level.INFO, "Servicio ID: {0}, Total detalles: {1}", 
+                new Object[]{nuevoServicio.getId(), nuevoServicio.getDetalles().size()});
 
             return nuevoServicio;
         } catch (Exception e) {
-            System.err.println("Error al registrar servicio: " + e.getMessage());
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Error durante el registro del servicio: {0}", e.getMessage());
+            logger.log(Level.SEVERE, "Stack trace:", e);
             throw e;
         }
     }

@@ -38,28 +38,70 @@ public class ServicioResource {
     @POST
     public Response registrarServicio(Servicio servicio) {
         try {
-            System.out.println("📥 Servicio recibido en el backend:");
-            System.out.println("ID: " + servicio.getId());
-            System.out.println("Fecha: " + servicio.getFecha());
-            System.out.println("Descripción: " + servicio.getDescripcionGeneral());
-            System.out.println("Kilometraje: " + servicio.getKilometraje());
-            System.out.println("Costo Total: " + servicio.getCostoTotal());
-            System.out.println("Vehículo: " + (servicio.getVehiculo() != null ? 
-                "ID=" + servicio.getVehiculo().getId() : "null"));
+            logger.log(Level.INFO, "=== INICIO DE REGISTRO DE SERVICIO ===");
+            logger.log(Level.INFO, "📥 Servicio recibido en el backend:");
+            logger.log(Level.INFO, "ID: {0}", servicio.getId());
+            logger.log(Level.INFO, "Fecha: {0}", servicio.getFecha());
+            logger.log(Level.INFO, "Descripción: {0}", servicio.getDescripcionGeneral());
+            logger.log(Level.INFO, "Kilometraje: {0}", servicio.getKilometraje());
+            logger.log(Level.INFO, "Costo Total: {0}", servicio.getCostoTotal());
+            logger.log(Level.INFO, "Vehículo: {0}", servicio.getVehiculo() != null ? 
+                "ID=" + servicio.getVehiculo().getId() : "null");
             
             if (servicio.getVehiculo() != null) {
-                System.out.println("Detalles del vehículo recibido:");
-                System.out.println("- ID: " + servicio.getVehiculo().getId());
-                System.out.println("- Marca: " + servicio.getVehiculo().getMarca());
-                System.out.println("- Modelo: " + servicio.getVehiculo().getModelo());
-                System.out.println("- Chapa: " + servicio.getVehiculo().getChapa());
+                logger.log(Level.INFO, "Detalles del vehículo recibido:");
+                logger.log(Level.INFO, "- ID: {0}", servicio.getVehiculo().getId());
+                logger.log(Level.INFO, "- Marca: {0}", servicio.getVehiculo().getMarca());
+                logger.log(Level.INFO, "- Modelo: {0}", servicio.getVehiculo().getModelo());
+                logger.log(Level.INFO, "- Chapa: {0}", servicio.getVehiculo().getChapa());
             }
 
-            servicioService.registrarServicio(servicio);
-            return Response.status(Response.Status.CREATED).entity(servicio).build();
+            // Log de detalles
+            logger.log(Level.INFO, "Detalles del servicio recibidos:");
+            if (servicio.getDetalles() != null) {
+                logger.log(Level.INFO, "Cantidad de detalles: {0}", servicio.getDetalles().size());
+                for (int i = 0; i < servicio.getDetalles().size(); i++) {
+                    DetalleServicio detalle = servicio.getDetalles().get(i);
+                    logger.log(Level.INFO, "Detalle {0}:", i + 1);
+                    logger.log(Level.INFO, "- Descripción: {0}", detalle.getDescripcionTrabajo());
+                    logger.log(Level.INFO, "- Costo: {0}", detalle.getCosto());
+                    logger.log(Level.INFO, "- Mecánicos: {0}", detalle.getMecanicos() != null ? detalle.getMecanicos().size() : 0);
+                    logger.log(Level.INFO, "- Repuestos: {0}", detalle.getRepuestos() != null ? detalle.getRepuestos().size() : 0);
+                }
+            } else {
+                logger.log(Level.WARNING, "⚠️ No se recibieron detalles en el servicio");
+            }
+
+            Servicio servicioRegistrado = servicioService.registrarServicio(servicio);
+            logger.log(Level.INFO, "=== REGISTRO DE SERVICIO COMPLETADO EXITOSAMENTE ===");
+            logger.log(Level.INFO, "Servicio registrado con ID: {0}", servicioRegistrado.getId());
+
+            // Crear un DTO para la respuesta
+            Map<String, Object> responseDTO = new HashMap<>();
+            responseDTO.put("id", servicioRegistrado.getId());
+            responseDTO.put("fecha", servicioRegistrado.getFecha());
+            responseDTO.put("descripcionGeneral", servicioRegistrado.getDescripcionGeneral());
+            responseDTO.put("kilometraje", servicioRegistrado.getKilometraje());
+            responseDTO.put("costoTotal", servicioRegistrado.getCostoTotal());
+            
+            // Agregar vehículo
+            if (servicioRegistrado.getVehiculo() != null) {
+                Map<String, Object> vehiculoDTO = new HashMap<>();
+                vehiculoDTO.put("id", servicioRegistrado.getVehiculo().getId());
+                vehiculoDTO.put("marca", servicioRegistrado.getVehiculo().getMarca());
+                vehiculoDTO.put("modelo", servicioRegistrado.getVehiculo().getModelo());
+                vehiculoDTO.put("chapa", servicioRegistrado.getVehiculo().getChapa());
+                vehiculoDTO.put("anio", servicioRegistrado.getVehiculo().getAnio());
+                responseDTO.put("vehiculo", vehiculoDTO);
+            }
+            
+            // Agregar detalles usando el método DTO
+            responseDTO.put("detalles", servicioRegistrado.getDetallesDTO());
+
+            return Response.status(Response.Status.CREATED).entity(responseDTO).build();
         } catch (Exception e) {
-            System.err.println("❌ Error al registrar servicio: " + e.getMessage());
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "❌ Error al registrar servicio: {0}", e.getMessage());
+            logger.log(Level.SEVERE, "Stack trace:", e);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\": \"No se pudo registrar el servicio: " + e.getMessage() + "\"}")
                     .build();
