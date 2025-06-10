@@ -25,8 +25,34 @@ public class ServicioResource {
     }
 
     @POST
-    public void registrarServicio(Servicio servicio) {
-        servicioService.registrarServicio(servicio);
+    public Response registrarServicio(Servicio servicio) {
+        try {
+            System.out.println("📥 Servicio recibido en el backend:");
+            System.out.println("ID: " + servicio.getId());
+            System.out.println("Fecha: " + servicio.getFecha());
+            System.out.println("Descripción: " + servicio.getDescripcionGeneral());
+            System.out.println("Kilometraje: " + servicio.getKilometraje());
+            System.out.println("Costo Total: " + servicio.getCostoTotal());
+            System.out.println("Vehículo: " + (servicio.getVehiculo() != null ? 
+                "ID=" + servicio.getVehiculo().getId() : "null"));
+            
+            if (servicio.getVehiculo() != null) {
+                System.out.println("Detalles del vehículo recibido:");
+                System.out.println("- ID: " + servicio.getVehiculo().getId());
+                System.out.println("- Marca: " + servicio.getVehiculo().getMarca());
+                System.out.println("- Modelo: " + servicio.getVehiculo().getModelo());
+                System.out.println("- Chapa: " + servicio.getVehiculo().getChapa());
+            }
+
+            servicioService.registrarServicio(servicio);
+            return Response.status(Response.Status.CREATED).entity(servicio).build();
+        } catch (Exception e) {
+            System.err.println("❌ Error al registrar servicio: " + e.getMessage());
+            e.printStackTrace();
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"No se pudo registrar el servicio: " + e.getMessage() + "\"}")
+                    .build();
+        }
     }
 
     @GET

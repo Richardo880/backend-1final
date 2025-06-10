@@ -73,28 +73,68 @@ const RegistroServicio = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    // Validar que se haya seleccionado un vehículo
+    if (!servicio.vehiculoId) {
+      setMensaje('❌ Por favor seleccione un vehículo');
+      setIsLoading(false);
+      return;
+    }
+
+    // Validar que el vehículo existe en la lista
+    const vehiculoSeleccionado = vehiculos.find(v => v.id === Number(servicio.vehiculoId));
+    if (!vehiculoSeleccionado) {
+      setMensaje('❌ El vehículo seleccionado no es válido');
+      setIsLoading(false);
+      return;
+    }
+
+    console.log("🚗 Vehículo seleccionado:", vehiculoSeleccionado);
+
+    // Construir el payload
     const payload = {
       fecha: servicio.fecha,
       kilometraje: Number(servicio.kilometraje),
       descripcionGeneral: servicio.descripcionGeneral,
       costoTotal: servicio.detalles.reduce((s, d) => s + parseFloat(d.costo || 0), 0),
-      vehiculo: { id: Number(servicio.vehiculoId) },
+      vehiculo: {
+        id: vehiculoSeleccionado.id,
+        marca: vehiculoSeleccionado.marca,
+        modelo: vehiculoSeleccionado.modelo,
+        chapa: vehiculoSeleccionado.chapa,
+        anho: vehiculoSeleccionado.anho,
+        tipo: vehiculoSeleccionado.tipo
+      },
       detalles: servicio.detalles.map(d => ({
         descripcionTrabajo: d.descripcionTrabajo,
-        costo: parseFloat(d.costo),
-        mecanicos: d.mecanicos.map(id => ({ id })),
-        repuestos: d.repuestos.map(id => ({ id }))
+        costo: parseFloat(d.costo || 0),
+        mecanicos: d.mecanicos.map(id => ({ id: Number(id) })),
+        repuestos: d.repuestos.map(id => ({ id: Number(id) }))
       }))
     };
 
-    console.log("📤 Enviando payload:", payload);
+    console.log("📤 Enviando payload completo:", JSON.stringify(payload, null, 2));
 
     try {
-      await registrarServicio(payload);
+      const response = await registrarServicio(payload);
+      console.log("✅ Respuesta del servidor:", response);
       setMensaje('✅ Servicio registrado con éxito.');
+      // Limpiar el formulario después de un registro exitoso
+      setServicio({
+        clienteId: '',
+        vehiculoId: '',
+        fecha: '',
+        kilometraje: '',
+        descripcionGeneral: '',
+        detalles: [{
+          descripcionTrabajo: '',
+          costo: '',
+          mecanicos: [],
+          repuestos: []
+        }]
+      });
     } catch (error) {
-        console.error("❌ Error al registrar servicio:", error);
-        setMensaje('❌ Error al registrar el servicio: ' + error.message);
+      console.error("❌ Error al registrar servicio:", error);
+      setMensaje('❌ Error al registrar el servicio: ' + error.message);
     } finally {
       setIsLoading(false);
     }

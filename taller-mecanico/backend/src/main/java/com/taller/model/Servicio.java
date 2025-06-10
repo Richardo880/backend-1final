@@ -17,19 +17,18 @@ public class Servicio {
     private int kilometraje;
     private double costoTotal;
 
-    @JsonbTransient
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "vehiculo_id")
     private Vehiculo vehiculo;
 
     @OneToMany(mappedBy = "servicio", cascade = CascadeType.ALL)
     private List<DetalleServicio> detalles;
 
-    // Getters y Setters
-
-
+    // Constructor vacío requerido para JPA
     public Servicio() {
     }
 
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -84,5 +83,18 @@ public class Servicio {
 
     public void setDetalles(List<DetalleServicio> detalles) {
         this.detalles = detalles;
+    }
+
+    @Override
+    public String toString() {
+        return "Servicio{" +
+                "id=" + id +
+                ", fecha=" + fecha +
+                ", descripcionGeneral='" + descripcionGeneral + '\'' +
+                ", kilometraje=" + kilometraje +
+                ", costoTotal=" + costoTotal +
+                ", vehiculo=" + (vehiculo != null ? vehiculo.getId() : "null") +
+                ", detalles=" + (detalles != null ? detalles.size() : 0) +
+                '}';
     }
 }

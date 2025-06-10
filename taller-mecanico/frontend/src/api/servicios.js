@@ -5,16 +5,24 @@ export const registrarServicio = async (datos) => {
     body: JSON.stringify(datos)
   });
 
-  if (!resp.ok) {
-    const errorText = await resp.text();
-    throw new Error(`HTTP ${resp.status}: ${errorText}`);
-  }
-
-  // Solo intentar parsear JSON si hay contenido
   const contentType = resp.headers.get("content-type");
+  let errorMessage;
+
   if (contentType && contentType.includes("application/json")) {
-    return await resp.json();
+    const json = await resp.json();
+    if (!resp.ok) {
+      errorMessage = json.error || `Error HTTP ${resp.status}`;
+    }
+  } else {
+    const text = await resp.text();
+    if (!resp.ok) {
+      errorMessage = text || `Error HTTP ${resp.status}`;
+    }
   }
 
-  return null; // O resp.text() si esperás texto plano
+  if (errorMessage) {
+    throw new Error(errorMessage);
+  }
+
+  return resp.ok;
 };

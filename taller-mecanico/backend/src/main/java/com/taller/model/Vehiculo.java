@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.json.bind.annotation.JsonbTransient;
 
 @Entity
+@Table(name = "vehiculo")
 public class Vehiculo {
 
     @Id
@@ -19,20 +20,23 @@ public class Vehiculo {
     @Enumerated(EnumType.STRING)
     private TipoVehiculo tipo;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
     @JsonbTransient
     @OneToMany(mappedBy = "vehiculo", cascade = CascadeType.ALL)
-
     private List<Servicio> servicios;
 
     public enum TipoVehiculo {
         MOTO, COCHE, CAMIONETA, CAMION
     }
 
-    // Getters y Setters
+    // Constructor vacío requerido para JPA
+    public Vehiculo() {
+    }
 
+    // Getters y Setters
     public Long getId() {
         return id;
     }
@@ -95,5 +99,17 @@ public class Vehiculo {
 
     public void setServicios(List<Servicio> servicios) {
         this.servicios = servicios;
+    }
+
+    @Override
+    public String toString() {
+        return "Vehiculo{" +
+                "id=" + id +
+                ", marca='" + marca + '\'' +
+                ", modelo='" + modelo + '\'' +
+                ", chapa='" + chapa + '\'' +
+                ", anho=" + anho +
+                ", tipo=" + tipo +
+                '}';
     }
 }
