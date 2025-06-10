@@ -2,6 +2,7 @@
 /home/ricardo/Documents/clon/backend-1final/taller-mecanico/backend/src/main/java/com/taller/service/ServicioService.java
 /home/ricardo/Documents/clon/backend-1final/taller-mecanico/backend/src/main/java/com/taller/service/VehiculoService.java
 /home/ricardo/Documents/clon/backend-1final/taller-mecanico/backend/src/main/java/com/taller/service/MecanicoService.java
+/home/ricardo/Documents/clon/backend-1final/taller-mecanico/backend/src/main/java/com/taller/rest/DatosPruebaResource.java
 /home/ricardo/Documents/clon/backend-1final/taller-mecanico/backend/src/main/java/com/taller/model/Vehiculo.java
 /home/ricardo/Documents/clon/backend-1final/taller-mecanico/backend/src/main/java/com/taller/model/DetalleServicio.java
 /home/ricardo/Documents/clon/backend-1final/taller-mecanico/backend/src/main/java/com/taller/model/Servicio.java

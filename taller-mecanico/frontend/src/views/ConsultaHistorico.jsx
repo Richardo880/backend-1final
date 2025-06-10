@@ -4,41 +4,82 @@ import { obtenerClientes } from '../api/clientes';
 const ConsultaHistorico = () => {
   const [clientes, setClientes] = useState([]);
   const [clienteId, setClienteId] = useState('');
+  const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
   const [fechaDesde, setFechaDesde] = useState('');
   const [servicios, setServicios] = useState([]);
-  const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
+  const [servicioExpandido, setServicioExpandido] = useState(null);
 
   useEffect(() => {
-    obtenerClientes().then(setClientes);
+    obtenerClientes().then(data => {
+      setClientes(data);
+    });
   }, []);
 
   const buscarServicios = async () => {
     let url = 'http://localhost:8080/backend/api/servicios/filtro';
     const params = [];
 
-    if (clienteId) params.push(`clienteId=${clienteId}`);
-    if (fechaDesde) params.push(`fechaDesde=${fechaDesde}`);
+    if (clienteId) {
+      params.push(`cliente=${clienteId}`);
+      // Encontrar el cliente seleccionado para mostrar su nombre
+      const cliente = clientes.find(c => c.id === parseInt(clienteId));
+      setClienteSeleccionado(cliente);
+    } else {
+      setClienteSeleccionado(null);
+    }
+    
+    if (fechaDesde) params.push(`fechaInicio=${fechaDesde}`);
     if (params.length > 0) url += '?' + params.join('&');
 
-    const response = await fetch(url);
-    if (!response.ok) {
-      alert('Error al obtener servicios');
-      return;
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Error al obtener servicios');
+      }
+      const data = await response.json();
+      console.log('Servicios obtenidos:', data);
+      setServicios(data);
+      setServicioExpandido(null);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al obtener servicios: ' + error.message);
     }
-
-    const data = await response.json();
-    setServicios(data);
-    setServicioSeleccionado(null);
   };
 
-  const seleccionarServicio = async (id) => {
-    const response = await fetch(`http://localhost:8080/backend/api/servicios/${id}`);
-    if (!response.ok) {
-      alert('Error al obtener detalles del servicio');
-      return;
+  const getMensajeResultados = () => {
+    if (servicios.length === 0) {
+      if (clienteSeleccionado) {
+        return `El cliente ${clienteSeleccionado.nombre} no tiene servicios registrados`;
+      }
+      return 'No se encontraron servicios con los filtros seleccionados';
     }
-    const data = await response.json();
-    setServicioSeleccionado(data);
+    
+    if (clienteSeleccionado) {
+      return `Se encontraron ${servicios.length} servicio(s) para el cliente ${clienteSeleccionado.nombre}`;
+    }
+    return `Se encontraron ${servicios.length} servicio(s)`;
+  };
+
+  const toggleDetalles = async (servicio) => {
+    console.log('Toggle detalles para servicio:', servicio);
+    if (servicioExpandido?.id === servicio.id) {
+      console.log('Cerrando detalles');
+      setServicioExpandido(null);
+    } else {
+      try {
+        console.log('Obteniendo detalles del servicio:', servicio.id);
+        const response = await fetch(`http://localhost:8080/backend/api/servicios/${servicio.id}`);
+        if (!response.ok) {
+          throw new Error('Error al obtener detalles del servicio');
+        }
+        const detalles = await response.json();
+        console.log('Detalles obtenidos:', detalles);
+        setServicioExpandido(detalles);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al obtener detalles del servicio: ' + error.message);
+      }
+    }
   };
 
   return (
@@ -56,7 +97,11 @@ const ConsultaHistorico = () => {
               </label>
               <select 
                 value={clienteId} 
-                onChange={e => setClienteId(e.target.value)} 
+                onChange={e => {
+                  setClienteId(e.target.value);
+                  setClienteSeleccionado(null);
+                  setServicios([]);
+                }} 
                 className="select select-bordered w-full"
               >
                 <option value="">Todos los clientes</option>
@@ -75,7 +120,10 @@ const ConsultaHistorico = () => {
               <input 
                 type="date" 
                 value={fechaDesde} 
-                onChange={e => setFechaDesde(e.target.value)} 
+                onChange={e => {
+                  setFechaDesde(e.target.value);
+                  setServicios([]);
+                }} 
                 className="input input-bordered w-full"
               />
             </div>
@@ -92,18 +140,21 @@ const ConsultaHistorico = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h3 className="card-title text-lg">Servicios encontrados</h3>
-            
-            {servicios.length === 0 ? (
-              <div className="alert alert-info">
-                <span>No hay servicios que mostrar. Realiza una búsqueda.</span>
+      <div className="card bg-base-100 shadow-xl">
+        <div className="card-body">
+          <h3 className="card-title text-lg">Servicios encontrados</h3>
+          
+          {servicios.length === 0 ? (
+            <div className={`alert ${clienteSeleccionado ? 'alert-warning' : 'alert-info'}`}>
+              <span>{getMensajeResultados()}</span>
+            </div>
+          ) : (
+            <>
+              <div className="alert alert-success mb-4">
+                <span>{getMensajeResultados()}</span>
               </div>
-            ) : (
-              <div className="overflow-y-auto max-h-96">
-                <table className="table table-zebra w-full">
+              <div className="overflow-x-auto">
+                <table className="table w-full">
                   <thead>
                     <tr>
                       <th>Fecha</th>
@@ -113,91 +164,94 @@ const ConsultaHistorico = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {servicios.map(s => (
-                      <tr key={s.id} className="hover">
-                        <td>{s.fecha}</td>
-                        <td className="truncate max-w-xs">{s.descripcionGeneral}</td>
-                        <td>${s.costoTotal}</td>
-                        <td>
-                          <button 
-                            onClick={() => seleccionarServicio(s.id)} 
-                            className="btn btn-sm btn-outline"
-                          >
-                            Ver detalles
-                          </button>
-                        </td>
-                      </tr>
+                    {servicios.map(servicio => (
+                      <React.Fragment key={servicio.id}>
+                        <tr className="hover">
+                          <td>{new Date(servicio.fecha).toLocaleDateString()}</td>
+                          <td className="truncate max-w-xs">{servicio.descripcionGeneral}</td>
+                          <td>${servicio.costoTotal.toLocaleString()}</td>
+                          <td>
+                            <button 
+                              onClick={() => toggleDetalles(servicio)} 
+                              className={`btn btn-sm ${servicioExpandido?.id === servicio.id ? 'btn-primary' : 'btn-outline'}`}
+                            >
+                              {servicioExpandido?.id === servicio.id ? 'Ocultar detalles' : 'Ver detalles'}
+                            </button>
+                          </td>
+                        </tr>
+                        {servicioExpandido?.id === servicio.id && (
+                          <tr>
+                            <td colSpan="4" className="bg-base-200">
+                              <div className="p-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <h4 className="font-bold mb-2">Información del Servicio</h4>
+                                    <p><strong>Fecha:</strong> {new Date(servicioExpandido.fecha).toLocaleDateString()}</p>
+                                    <p><strong>Kilometraje:</strong> {servicioExpandido.kilometraje.toLocaleString()} km</p>
+                                    <p><strong>Costo Total:</strong> ${servicioExpandido.costoTotal.toLocaleString()}</p>
+                                  </div>
+                                  {servicioExpandido.vehiculo && (
+                                    <div>
+                                      <h4 className="font-bold mb-2">Información del Vehículo</h4>
+                                      <p><strong>Marca:</strong> {servicioExpandido.vehiculo.marca}</p>
+                                      <p><strong>Modelo:</strong> {servicioExpandido.vehiculo.modelo}</p>
+                                      <p><strong>Chapa:</strong> {servicioExpandido.vehiculo.chapa}</p>
+                                      <p><strong>Año:</strong> {servicioExpandido.vehiculo.anio}</p>
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="mt-4">
+                                  <h4 className="font-bold mb-2">Descripción General</h4>
+                                  <p className="bg-base-100 p-3 rounded">{servicioExpandido.descripcionGeneral}</p>
+                                </div>
+
+                                <div className="mt-4">
+                                  <h4 className="font-bold mb-2">Trabajos Realizados</h4>
+                                  <div className="space-y-2">
+                                    {servicioExpandido.detallesDTO && servicioExpandido.detallesDTO.length > 0 ? (
+                                      servicioExpandido.detallesDTO.map((detalle, index) => (
+                                        <div key={index} className="bg-base-100 p-3 rounded">
+                                          <div className="flex justify-between">
+                                            <span className="font-semibold">{detalle.descripcionTrabajo}</span>
+                                            <span className="font-bold">${detalle.costo.toLocaleString()}</span>
+                                          </div>
+                                          {detalle.mecanicos && detalle.mecanicos.length > 0 && (
+                                            <div className="mt-1">
+                                              <span className="text-sm font-semibold">Mecánicos: </span>
+                                              {detalle.mecanicos.map((m, i) => (
+                                                <span key={i} className="badge badge-sm mr-1">{m.nombre}</span>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {detalle.repuestos && detalle.repuestos.length > 0 && (
+                                            <div className="mt-1">
+                                              <span className="text-sm font-semibold">Repuestos: </span>
+                                              {detalle.repuestos.map((r, i) => (
+                                                <span key={i} className="badge badge-sm mr-1">{r.nombre}</span>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <div className="bg-base-100 p-3 rounded text-center text-gray-500">
+                                        No hay trabajos registrados para este servicio
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>
               </div>
-            )}
-          </div>
-        </div>
-
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h3 className="card-title text-lg">Detalles del servicio</h3>
-            
-            {servicioSeleccionado ? (
-              <div className="overflow-y-auto max-h-96">
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  <div className="stat">
-                    <div className="stat-title">Fecha</div>
-                    <div className="stat-value text-lg">{servicioSeleccionado.fecha}</div>
-                  </div>
-                  
-                  <div className="stat">
-                    <div className="stat-title">Kilometraje</div>
-                    <div className="stat-value text-lg">{servicioSeleccionado.kilometraje}</div>
-                  </div>
-                </div>
-                
-                <div className="mb-4">
-                  <h4 className="font-semibold">Descripción general</h4>
-                  <p className="bg-base-200 p-2 rounded">{servicioSeleccionado.descripcionGeneral}</p>
-                </div>
-                
-                <div className="mb-4">
-                  <h4 className="font-semibold text-primary">Costo total</h4>
-                  <p className="text-xl font-bold">${servicioSeleccionado.costoTotal}</p>
-                </div>
-                
-                <div className="divider">Detalles de trabajos realizados</div>
-                
-                <div className="space-y-4">
-                  {servicioSeleccionado.detalles.map((d, i) => (
-                    <div key={i} className="card bg-base-200 shadow-sm">
-                      <div className="card-body p-4">
-                        <h3 className="card-title text-sm">{d.descripcionTrabajo}</h3>
-                        <p className="text-right font-bold">${d.costo}</p>
-                        
-                        <div className="mt-2 text-sm">
-                          <div className="mb-1">
-                            <span className="font-semibold">Mecánicos:</span> 
-                            <span className="badge badge-ghost ml-1">
-                              {d.mecanicos.map(m => m.nombre).join(', ') || 'Ninguno'}
-                            </span>
-                          </div>
-                          
-                          <div>
-                            <span className="font-semibold">Repuestos:</span> 
-                            <span className="badge badge-ghost ml-1">
-                              {d.repuestos.map(r => r.nombre).join(', ') || 'Ninguno'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="alert alert-info">
-                <span>Selecciona un servicio para ver sus detalles.</span>
-              </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>

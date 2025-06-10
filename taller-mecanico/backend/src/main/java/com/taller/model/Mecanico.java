@@ -23,6 +23,14 @@ public class Mecanico {
     @ManyToMany(mappedBy = "mecanicos")
     private List<DetalleServicio> detalles;
 
+    public Mecanico() {}
+
+    public Mecanico(String nombre, String especialidad, String telefono) {
+        this.nombre = nombre;
+        this.especialidad = especialidad;
+        this.telefono = telefono;
+    }
+
     // Getters y Setters
 
 

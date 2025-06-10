@@ -1,132 +1,84 @@
 import React, { useState } from 'react';
+import { Button, Card, Alert, Spinner } from 'react-bootstrap';
+import axios from 'axios';
 
 const CargaDatos = () => {
-  const [mensaje, setMensaje] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
 
-  const cargarDatos = async () => {
-    setMensaje('Cargando datos...');
-    setIsLoading(true);
+    const cargarDatosPrueba = async () => {
+        setLoading(true);
+        setError(null);
+        setSuccess(false);
 
-    try {
-      // Crear cliente
-      const clienteResp = await fetch('http://localhost:8080/backend/api/clientes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: 'Juan Pérez',
-          telefono: '0981123456',
-          direccion: 'Av. Central 123',
-          ruc: '1234567-8',
-          tipo: 'REGULAR'
-        })
-      });
+        try {
+            const response = await axios.post('http://localhost:8080/backend/api/datos-prueba/cargar');
+            setSuccess(true);
+            console.log('Datos cargados exitosamente:', response.data);
+        } catch (err) {
+            setError(err.response?.data || 'Error al cargar los datos de prueba');
+            console.error('Error al cargar datos:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      if (!clienteResp.ok) throw new Error('Error creando cliente');
+    return (
+        <div className="container mt-4">
+            <Card>
+                <Card.Header as="h5">Carga de Datos de Prueba</Card.Header>
+                <Card.Body>
+                    <Card.Text>
+                        Este botón cargará datos de prueba en el sistema, incluyendo:
+                    </Card.Text>
+                    <ul className="list-unstyled mb-3">
+                        <li>5 clientes</li>
+                        <li>5 vehículos</li>
+                        <li>5 mecánicos</li>
+                        <li>5 repuestos</li>
+                    </ul>
+                    <Card.Text>
+                        <strong>Nota:</strong> Esta acción no se puede deshacer.
+                    </Card.Text>
 
-      let cliente;
-      try {
-        cliente = await clienteResp.json(); // solo si el backend devuelve JSON
-      } catch {
-        // fallback en caso de no haber contenido
-        setMensaje('⚠ Cliente creado, pero no se pudo leer el ID. Creá el vehículo manualmente.');
-        return;
-      }
+                    {error && (
+                        <Alert variant="danger" className="mt-3">
+                            {error}
+                        </Alert>
+                    )}
 
-      // Crear vehículo
-      const vehiculoResp = await fetch('http://localhost:8080/backend/api/vehiculos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          marca: 'Toyota',
-          modelo: 'Hilux',
-          chapa: 'ABC123',
-          anho: 2020,
-          tipo: 'CAMIONETA',
-          cliente: { id: cliente.id }
-        })
-      });
+                    {success && (
+                        <Alert variant="success" className="mt-3">
+                            Datos de prueba cargados exitosamente
+                        </Alert>
+                    )}
 
-      if (!vehiculoResp.ok) throw new Error('Error creando vehículo');
-
-      // Crear mecánico
-      const mecanicoResp = await fetch('http://localhost:8080/backend/api/mecanicos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: 'Carlos Méndez',
-          direccion: 'Calle Taller 123',
-          telefono: '0989123456',
-          fechaIngreso: '2022-05-01',
-          especialidad: 'Mecánica general'
-        })
-      });
-
-      if (!mecanicoResp.ok) throw new Error('Error creando mecánico');
-
-      // Crear repuesto
-      const repuestoResp = await fetch('http://localhost:8080/backend/api/repuestos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          codigo: 'RPT123',
-          nombre: 'Filtro de aceite'
-        })
-      });
-
-      if (!repuestoResp.ok) throw new Error('Error creando repuesto');
-
-      setMensaje('✅ Datos cargados con éxito.');
-    } catch (error) {
-      console.error(error);
-      setMensaje('❌ Error al cargar datos: ' + error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="card bg-base-100 shadow-xl max-w-2xl mx-auto">
-      <div className="card-body">
-        <h2 className="card-title text-2xl font-bold text-center mb-6">Carga de Datos de Prueba</h2>
-        
-        <div className="space-y-6">
-          <div className="bg-base-200 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Datos que se cargarán:</h3>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>Cliente: Juan Pérez</li>
-              <li>Vehículo: Toyota Hilux (ABC123)</li>
-              <li>Mecánico: Carlos Méndez</li>
-              <li>Repuesto: Filtro de aceite (RPT123)</li>
-            </ul>
-          </div>
-          
-          <div className="flex justify-center">
-            <button 
-              onClick={cargarDatos} 
-              className={`btn btn-primary btn-lg ${isLoading ? 'loading' : ''}`}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Cargando...' : 'Cargar Datos de Prueba'}
-            </button>
-          </div>
-          
-          {mensaje && (
-            <div className={`alert ${
-              mensaje.includes('✅') ? 'alert-success' : 
-              mensaje.includes('⚠') ? 'alert-warning' : 
-              mensaje.includes('❌') ? 'alert-error' : 
-              'alert-info'
-            } mt-4`}>
-              <div>
-                <span>{mensaje}</span>
-              </div>
-            </div>
-          )}
+                    <Button 
+                        variant="primary" 
+                        onClick={cargarDatosPrueba}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <>
+                                <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                    role="status"
+                                    aria-hidden="true"
+                                    className="me-2"
+                                />
+                                Cargando...
+                            </>
+                        ) : (
+                            'Cargar Datos de Prueba'
+                        )}
+                    </Button>
+                </Card.Body>
+            </Card>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default CargaDatos;

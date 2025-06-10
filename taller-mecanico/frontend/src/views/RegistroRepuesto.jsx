@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 
 const RegistroRepuesto = () => {
   const [repuesto, setRepuesto] = useState({
-    codigo: '',
-    nombre: ''
+    nombre: '',
+    descripcion: '',
+    precio: ''
   });
   const [mensaje, setMensaje] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,11 +23,15 @@ const RegistroRepuesto = () => {
       const response = await fetch('http://localhost:8080/backend/api/repuestos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(repuesto)
+        body: JSON.stringify({
+          nombre: repuesto.nombre,
+          descripcion: repuesto.descripcion,
+          precio: parseFloat(repuesto.precio)
+        })
       });
       if (response.ok) {
         setMensaje('✅ Repuesto registrado con éxito.');
-        setRepuesto({ codigo: '', nombre: '' });
+        setRepuesto({ nombre: '', descripcion: '', precio: '' });
       } else {
         setMensaje('❌ Error al registrar repuesto.');
       }
@@ -46,21 +51,6 @@ const RegistroRepuesto = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-control">
             <label className="label">
-              <span className="label-text">Código</span>
-            </label>
-            <input 
-              type="text"
-              name="codigo"
-              value={repuesto.codigo}
-              onChange={handleChange}
-              placeholder="Ej: REP-001"
-              className="input input-bordered w-full"
-              required
-            />
-          </div>
-          
-          <div className="form-control">
-            <label className="label">
               <span className="label-text">Nombre del Repuesto</span>
             </label>
             <input 
@@ -71,6 +61,36 @@ const RegistroRepuesto = () => {
               placeholder="Ej: Filtro de aceite"
               className="input input-bordered w-full"
               required
+            />
+          </div>
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Descripción</span>
+            </label>
+            <textarea 
+              name="descripcion"
+              value={repuesto.descripcion}
+              onChange={handleChange}
+              placeholder="Ej: Filtro de aceite sintético de alta calidad"
+              className="textarea textarea-bordered w-full"
+            />
+          </div>
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Precio</span>
+            </label>
+            <input 
+              type="number"
+              name="precio"
+              value={repuesto.precio}
+              onChange={handleChange}
+              placeholder="Ej: 25000"
+              className="input input-bordered w-full"
+              required
+              min="0"
+              step="0.01"
             />
           </div>
           

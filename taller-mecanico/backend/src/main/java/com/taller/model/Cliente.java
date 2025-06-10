@@ -15,6 +15,7 @@ public class Cliente {
     private String telefono;
     private String direccion;
     private String ruc;
+    private String email;
 
     @Enumerated(EnumType.STRING)
     private TipoCliente tipo;
@@ -25,6 +26,16 @@ public class Cliente {
 
     public enum TipoCliente {
         OCASIONAL, REGULAR, VIP
+    }
+
+    public Cliente() {
+    }
+
+    public Cliente(String nombre, String ruc, String telefono, String email) {
+        this.nombre = nombre;
+        this.ruc = ruc;
+        this.telefono = telefono;
+        this.email = email;
     }
 
     // Getters y Setters

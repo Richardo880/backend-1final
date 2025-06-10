@@ -6,7 +6,8 @@ const RegistroVehiculo = () => {
     marca: '',
     modelo: '',
     chapa: '',
-    anho: '',
+    placa: '',
+    anio: '',
     tipo: 'COCHE',
     clienteId: ''
   });
@@ -24,7 +25,12 @@ const RegistroVehiculo = () => {
   // Manejar cambios en los inputs
   const handleChange = e => {
     const { name, value } = e.target;
-    setVehiculo(prev => ({ ...prev, [name]: value }));
+    if (name === 'chapa') {
+      // Cuando cambia la chapa, actualizar también la placa
+      setVehiculo(prev => ({ ...prev, chapa: value, placa: value }));
+    } else {
+      setVehiculo(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async e => {
@@ -40,7 +46,8 @@ const RegistroVehiculo = () => {
           marca: vehiculo.marca,
           modelo: vehiculo.modelo,
           chapa: vehiculo.chapa,
-          anho: parseInt(vehiculo.anho),
+          placa: vehiculo.chapa, // Asegurar que placa tenga el mismo valor que chapa
+          anio: parseInt(vehiculo.anio),
           tipo: vehiculo.tipo,
           cliente: { id: parseInt(vehiculo.clienteId) }
         })
@@ -48,7 +55,7 @@ const RegistroVehiculo = () => {
 
       if (response.ok) {
         setMensaje('✅ Vehículo registrado correctamente.');
-        setVehiculo({ marca: '', modelo: '', chapa: '', anho: '', tipo: 'COCHE', clienteId: '' });
+        setVehiculo({ marca: '', modelo: '', chapa: '', placa: '', anio: '', tipo: 'COCHE', clienteId: '' });
       } else {
         setMensaje('❌ Error al registrar vehículo.');
       }
@@ -116,8 +123,8 @@ const RegistroVehiculo = () => {
             </label>
             <input 
               type="number"
-              name="anho"
-              value={vehiculo.anho}
+              name="anio"
+              value={vehiculo.anio}
               onChange={handleChange}
               placeholder="Ej: 2020"
               className="input input-bordered w-full"

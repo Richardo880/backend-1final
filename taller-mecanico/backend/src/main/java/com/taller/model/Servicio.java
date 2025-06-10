@@ -3,7 +3,11 @@ package com.taller.model;
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Map;
+import java.util.HashMap;
 
 @Entity
 public class Servicio {
@@ -21,11 +25,68 @@ public class Servicio {
     @JoinColumn(name = "vehiculo_id")
     private Vehiculo vehiculo;
 
-    @OneToMany(mappedBy = "servicio", cascade = CascadeType.ALL)
-    private List<DetalleServicio> detalles;
+    @JsonbTransient
+    @OneToMany(mappedBy = "servicio", cascade = {CascadeType.ALL}, orphanRemoval = true)
+    private List<DetalleServicio> detalles = new ArrayList<>();
 
     // Constructor vacío requerido para JPA
     public Servicio() {
+    }
+
+    // Método helper para agregar detalles
+    public void agregarDetalle(DetalleServicio detalle) {
+        detalles.add(detalle);
+        detalle.setServicio(this);
+    }
+
+    // Método helper para remover detalles
+    public void removerDetalle(DetalleServicio detalle) {
+        detalles.remove(detalle);
+        detalle.setServicio(null);
+    }
+
+    // Método para obtener detalles serializables
+    public List<Map<String, Object>> getDetallesDTO() {
+        if (detalles == null) {
+            return new ArrayList<>();
+        }
+        return detalles.stream()
+            .map(detalle -> {
+                Map<String, Object> dto = new HashMap<>();
+                dto.put("id", detalle.getId());
+                dto.put("descripcionTrabajo", detalle.getDescripcionTrabajo());
+                dto.put("costo", detalle.getCosto());
+                
+                // Agregar mecánicos
+                if (detalle.getMecanicos() != null) {
+                    dto.put("mecanicos", detalle.getMecanicos().stream()
+                        .map(m -> {
+                            Map<String, Object> mDto = new HashMap<>();
+                            mDto.put("id", m.getId());
+                            mDto.put("nombre", m.getNombre());
+                            mDto.put("especialidad", m.getEspecialidad());
+                            return mDto;
+                        })
+                        .collect(Collectors.toList()));
+                }
+                
+                // Agregar repuestos
+                if (detalle.getRepuestos() != null) {
+                    dto.put("repuestos", detalle.getRepuestos().stream()
+                        .map(r -> {
+                            Map<String, Object> rDto = new HashMap<>();
+                            rDto.put("id", r.getId());
+                            rDto.put("nombre", r.getNombre());
+                            rDto.put("descripcion", r.getDescripcion());
+                            rDto.put("precio", r.getPrecio());
+                            return rDto;
+                        })
+                        .collect(Collectors.toList()));
+                }
+                
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
 
     // Getters y Setters
