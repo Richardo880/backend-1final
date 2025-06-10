@@ -1,0 +1,220 @@
+{
+    "info": {
+      "name": "Taller Mecánico API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Clientes",
+        "item": [
+          {
+            "name": "Listar Clientes",
+            "request": {
+              "method": "GET",
+              "url": "{{base_url}}/clientes"
+            }
+          },
+          {
+            "name": "Crear Cliente",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"nombre\": \"Juan Pérez\",\n    \"ruc\": \"1234567890\"\n}"
+              },
+              "url": "{{base_url}}/clientes"
+            }
+          },
+          {
+            "name": "Buscar Cliente por ID",
+            "request": {
+              "method": "GET",
+              "url": "{{base_url}}/clientes/{{cliente_id}}"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Vehículos",
+        "item": [
+          {
+            "name": "Listar Vehículos",
+            "request": {
+              "method": "GET",
+              "url": "{{base_url}}/vehiculos"
+            }
+          },
+          {
+            "name": "Crear Vehículo",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"marca\": \"Toyota\",\n    \"modelo\": \"Corolla\",\n    \"placa\": \"ABC123\",\n    \"anio\": \"2020\",\n    \"cliente\": {\n        \"id\": 1\n    }\n}"
+              },
+              "url": "{{base_url}}/vehiculos"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Mecánicos",
+        "item": [
+          {
+            "name": "Listar Mecánicos",
+            "request": {
+              "method": "GET",
+              "url": "{{base_url}}/mecanicos"
+            }
+          },
+          {
+            "name": "Crear Mecánico",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"nombre\": \"Carlos Rodríguez\",\n    \"especialidad\": \"Motor\"\n}"
+              },
+              "url": "{{base_url}}/mecanicos"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Repuestos",
+        "item": [
+          {
+            "name": "Listar Repuestos",
+            "request": {
+              "method": "GET",
+              "url": "{{base_url}}/repuestos"
+            }
+          },
+          {
+            "name": "Crear Repuesto",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"nombre\": \"Filtro de Aceite\",\n    \"descripcion\": \"Filtro de aceite sintético\",\n    \"precio\": 25.0\n}"
+              },
+              "url": "{{base_url}}/repuestos"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Servicios",
+        "item": [
+          {
+            "name": "Listar Servicios",
+            "request": {
+              "method": "GET",
+              "url": "{{base_url}}/servicios"
+            }
+          },
+          {
+            "name": "Crear Servicio",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"fecha\": \"2024-03-20\",\n    \"descripcionGeneral\": \"Mantenimiento general\",\n    \"kilometraje\": 50000,\n    \"vehiculo\": {\n        \"id\": 1\n    },\n    \"detalles\": [\n        {\n            \"descripcionTrabajo\": \"Cambio de aceite\",\n            \"costo\": 150000.0,\n            \"mecanicos\": [\n                {\n                    \"id\": 1\n                }\n            ],\n            \"repuestos\": [\n                {\n                    \"id\": 1\n                }\n            ]\n        }\n    ]\n}"
+              },
+              "url": "{{base_url}}/servicios"
+            }
+          },
+          {
+            "name": "Buscar Servicio por ID",
+            "request": {
+              "method": "GET",
+              "url": "{{base_url}}/servicios/{{servicio_id}}"
+            }
+          },
+          {
+            "name": "Filtrar Servicios",
+            "request": {
+              "method": "GET",
+              "url": {
+                "raw": "{{base_url}}/servicios/filtro?fechaInicio=2024-01-01&fechaFin=2024-12-31&placa=ABC123&cliente=Juan",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "servicios",
+                  "filtro"
+                ],
+                "query": [
+                  {
+                    "key": "fechaInicio",
+                    "value": "2024-01-01"
+                  },
+                  {
+                    "key": "fechaFin",
+                    "value": "2024-12-31"
+                  },
+                  {
+                    "key": "placa",
+                    "value": "ABC123"
+                  },
+                  {
+                    "key": "cliente",
+                    "value": "Juan"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "Datos de Prueba",
+        "item": [
+          {
+            "name": "Cargar Datos de Prueba",
+            "request": {
+              "method": "POST",
+              "url": "{{base_url}}/datos-prueba/cargar"
+            }
+          }
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "key": "base_url",
+        "value": "http://localhost:8080/backend/api"
+      }
+    ]
+  }
+  
